@@ -1,0 +1,77 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: 当前文件",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceRoot}/run.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--script",
+                "l25",
+                "1"
+
+                // "--generate_gamble_script",
+                // "l25"
+
+                // (6) --regist activity_id city task_num save_captcha auth_id channel_id
+                // "--regist",
+                // "945",
+                // "beijing",
+                // "1",
+                // "1",
+                // "1",
+                // "64743"
+
+                // (7) --gamble activity_id city task_file task_id task_num skip auth_id proxy_id
+                // "--gamble",
+                // "1116",
+                // "other",
+                // "t",
+                // "1",
+                // "20",
+                // "0",
+                // "2",
+                // "61863"
+
+                // (5) --load_activities_to_db activity_id src city date period
+                // "--load_activities_to_db",
+                // "1116",
+                // "runtime/activities/1116_shanghai.json",
+                // "shanghai",
+                // "20190917",
+                // "10:00-14:00"
+
+                // (5) --extend activity_id city task_num skip auth_id
+                // python3 run.py --extend 1116 other 2000 0 2
+                // "--extend",
+                // "1116",
+                // "other",
+                // "10000",
+                // "0",
+                // "2"
+
+                // "--revert_to_old_accounts",
+                // "928",
+                // "beijing",
+                // "5",
+                // "0",
+                // "20190912999999",
+                // "1",
+                // "2"
+
+                // "--export_accounts_from_database",
+                // "res/l.csv",
+                // "1"
+
+                // "--revert_to_old_accounts",
+                // "res/l.csv",
+                // "res/lo.csv"
+            ]
+        }
+    ]
+}
