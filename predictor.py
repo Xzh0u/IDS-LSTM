@@ -9,12 +9,11 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Hyper-parameters
 input_size = 52
-sequence_length = 52
 hidden_size = 128
 num_layers = 2
 num_classes = 21
-batch_size = 100
-num_epochs = 2
+batch_size = 256
+num_epochs = 100
 learning_rate = 0.01
 
 # Reading the data in the form of csv
@@ -64,10 +63,11 @@ print("Shape of the Test dataset:", test_normalized.shape)
 print("Shape of the CV dataset:", cv_normalized.shape)
 
 # Resizing the train, test and cv data.
-x_train = np.resize(train_normalized, (230000, 1, 52))
+x_train = np.resize(train_normalized, (230400, 1, 52))
 x_test = np.resize(test_normalized, (89000, 1, 52))
 x_cv = np.resize(cv_normalized, (93440, 1, 52))
 print(x_train)
+print(x_train.shape)
 
 # data_loader
 train_loader = torch.utils.data.DataLoader(dataset=x_train,
@@ -121,6 +121,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 # Train the model
 total_step = len(train_loader)
+print(total_step)
 for epoch in range(num_epochs):
     for i, datas in enumerate(train_loader):
         # Forward pass
