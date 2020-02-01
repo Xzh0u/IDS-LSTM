@@ -13,7 +13,7 @@ hidden_size = 128
 num_layers = 2
 num_classes = 21
 batch_size = 256
-num_epochs = 2
+num_epochs = 1
 learning_rate = 0.01
 
 # Reading the data in the form of csv
@@ -31,21 +31,57 @@ test.sort_values(by=['simulationRun', 'faultNumber'], inplace=True)
 cv.sort_values(by=['simulationRun', 'faultNumber'], inplace=True)
 
 # Removing faults 3,9 and 15
+tr = train.drop(train[(train.faultNumber == 3) | (
+    train.faultNumber == 9) | (train.faultNumber == 15)].index).reset_index()
 ts = test.drop(test[(test.faultNumber == 3) | (test.faultNumber == 9) | (
     test.faultNumber == 15)].index).reset_index()
+cv_ = cv.drop(cv[(cv.faultNumber == 3) | (cv.faultNumber == 9)
+                 | (cv.faultNumber == 15)].index).reset_index()
+print(tr)
 
-
+y_train = tr['faultNumber']
 y_test = ts['faultNumber']
+y_cv = cv_['faultNumber']
 
 # Removing unnecessary features from train, test and cv data.
+tr.drop(['faultNumber', 'Unnamed: 0', 'Unnamed: 0.1',
+         'simulationRun', 'sample', 'index'], axis=1, inplace=True)
 ts.drop(['faultNumber', 'Unnamed: 0', 'Unnamed: 0.1',
          'simulationRun', 'sample', 'index'], axis=1, inplace=True)
+cv_.drop(['faultNumber', 'Unnamed: 0', 'Unnamed: 0.1',
+          'simulationRun', 'sample', 'index'], axis=1, inplace=True)
+print(tr)
 
+# Data normalization
+# train_normalized = (tr - np.mean(tr)) / np.std(tr)
+# test_normalized = (ts - np.mean(ts)) / np.std(ts)
+# cv_normalized = (cv_ - np.mean(cv_)) / np.std(cv_)
+# print(train_normalized)
+
+# print('Shape of the Train dataset:', train_normalized.shape)
+# print("Shape of the Test dataset:", test_normalized.shape)
+# print("Shape of the CV dataset:", cv_normalized.shape)
+
+# Resizing the train, test and cv data.
+x_train = np.resize(tr, (230400, 1, 52))
 x_test = np.resize(ts, (88832, 1, 52))
+x_cv = np.resize(cv_, (93440, 1, 52))
+
+# data_loader
+train_loader = torch.utils.data.DataLoader(dataset=x_train,
+                                           batch_size=batch_size,
+                                           shuffle=False)
 
 test_loader = torch.utils.data.DataLoader(dataset=x_test,
                                           batch_size=batch_size,
                                           shuffle=False)
+
+cv_loader = torch.utils.data.DataLoader(dataset=x_cv,
+                                        batch_size=batch_size,
+                                        shuffle=True)
+print("DataLoader prepared!")
+
+# build the network
 
 
 class LSTM(nn.Module):
@@ -75,8 +111,32 @@ class LSTM(nn.Module):
 
 
 model = LSTM(input_size, hidden_size, num_layers, num_classes).to(device)
-model.load_state_dict(torch.load('model.pkl'))
-model.eval()
+model.float()
+
+# Loss and optimizer
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+
+# Train the model
+total_step = len(train_loader)
+print(total_step)
+print(len(test_loader))
+for epoch in range(num_epochs):
+    for i, datas in enumerate(train_loader):
+        # Forward pass
+        outputs = model(datas.float())
+        loss = criterion(outputs, torch.Tensor(list(y_train.values))[
+                         i * batch_size: (i + 1) * batch_size].long())
+
+        # Backward and optimize
+        loss.backward()
+
+        optimizer.step()
+        optimizer.zero_grad()
+
+        if (i+1) % 100 == 0:
+            print('Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}'
+                  .format(epoch+1, num_epochs, i+1, total_step, loss.item()))
 
 # Test the model
 with torch.no_grad():
@@ -93,3 +153,6 @@ with torch.no_grad():
 
     print('Test Accuracy of the model on test examples: {} %'.format(
         100 * correct / total))
+
+# Save the model checkpoint
+torch.save(model.state_dict(), 'model.pkl')
