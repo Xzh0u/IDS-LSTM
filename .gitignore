@@ -1,3 +1,5 @@
 */RData
 *.csv
 settings.json
+.DS_Store
+__pycache__

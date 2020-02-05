@@ -85,7 +85,7 @@ with torch.no_grad():
     model.float()
     for i, data in enumerate(test_loader):
         labels = torch.Tensor(list(y_test.values))[
-            i * batch_size: (i + 1) * batch_size]
+            i * batch_size: (i + 1) * batch_size].long()
         outputs = model(data.float())
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
