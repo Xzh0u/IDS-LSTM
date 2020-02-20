@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 import numpy as np
 import pandas as pd
+from utils import to_categorical
 
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -13,11 +14,11 @@ hidden_size = 128
 num_layers = 2
 num_classes = 21
 batch_size = 256
-num_epochs = 1
+num_epochs = 100
 learning_rate = 0.01
 
 # Reading the data in the form of csv
-train = pd.read_csv('data/sampled/train.csv')
+train = pd.read_csv("data/sampled/train.csv")
 test = pd.read_csv("data/sampled/test.csv")
 cv = pd.read_csv("data/sampled/cv.csv")
 
@@ -43,6 +44,10 @@ y_train = tr['faultNumber']
 y_test = ts['faultNumber']
 y_cv = cv_['faultNumber']
 
+# y_train = to_categorical(tr['faultNumber'], num_classes=21)
+# y_test = to_categorical(ts['faultNumber'], num_classes=21)
+# y_cv = to_categorical(cv_['faultNumber'], num_classes=21)
+
 # Removing unnecessary features from train, test and cv data.
 tr.drop(['faultNumber', 'Unnamed: 0', 'Unnamed: 0.1',
          'simulationRun', 'sample', 'index'], axis=1, inplace=True)
@@ -53,19 +58,19 @@ cv_.drop(['faultNumber', 'Unnamed: 0', 'Unnamed: 0.1',
 print(tr)
 
 # Data normalization
-# train_normalized = (tr - np.mean(tr)) / np.std(tr)
-# test_normalized = (ts - np.mean(ts)) / np.std(ts)
-# cv_normalized = (cv_ - np.mean(cv_)) / np.std(cv_)
-# print(train_normalized)
+train_normalized = (tr - np.mean(tr)) / np.std(tr)
+test_normalized = (ts - np.mean(ts)) / np.std(ts)
+cv_normalized = (cv_ - np.mean(cv_)) / np.std(cv_)
+print(train_normalized)
 
 # print('Shape of the Train dataset:', train_normalized.shape)
 # print("Shape of the Test dataset:", test_normalized.shape)
 # print("Shape of the CV dataset:", cv_normalized.shape)
 
 # Resizing the train, test and cv data.
-x_train = np.resize(tr, (230400, 1, 52))
-x_test = np.resize(ts, (88832, 1, 52))
-x_cv = np.resize(cv_, (93440, 1, 52))
+x_train = np.resize(train_normalized, (230400, 1, 52))
+x_test = np.resize(test_normalized, (88832, 1, 52))
+x_cv = np.resize(cv_normalized, (93440, 1, 52))
 
 # data_loader
 train_loader = torch.utils.data.DataLoader(dataset=x_train,
@@ -91,8 +96,9 @@ class LSTM(nn.Module):
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size,
                             num_layers=num_layers, batch_first=True)
-    #   self.dropout = nn.Dropout(drop_prob)
+    #    self.dropout = nn.Dropout(drop_prob)
         self.fc = nn.Linear(hidden_size, num_classes)
+    #    self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):  # input: tensor of shape (seq_len, batch, input_size)
         # Set initial hidden and cell state
@@ -107,6 +113,8 @@ class LSTM(nn.Module):
 
         # Decode the hidden state of the last time step
         out = self.fc(out[:, -1, :])
+
+    #    out = self.softmax(out)
         return out
 
 
@@ -127,6 +135,8 @@ for epoch in range(num_epochs):
         outputs = model(datas.float())
         loss = criterion(outputs, torch.Tensor(list(y_train.values))[
                          i * batch_size: (i + 1) * batch_size].long())
+        # loss = criterion(outputs,
+        #                  torch.Tensor(y_train[i * batch_size: (i + 1) * batch_size, :]))
 
         # Backward and optimize
         loss.backward()
