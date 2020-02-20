@@ -75,7 +75,7 @@ class LSTM(nn.Module):
 
 
 model = LSTM(input_size, hidden_size, num_layers, num_classes).to(device)
-model.load_state_dict(torch.load('model.pkl'))
+model.load_state_dict(torch.load('saved/model.pkl'))
 model.eval()  # change into test mode
 
 # Test the model

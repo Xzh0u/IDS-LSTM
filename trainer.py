@@ -20,57 +20,39 @@ learning_rate = 0.01
 # Reading the data in the form of csv
 train = pd.read_csv("data/sampled/train.csv")
 test = pd.read_csv("data/sampled/test.csv")
-cv = pd.read_csv("data/sampled/cv.csv")
 
 print("Shape of the sampled train data:", train.shape)
 print("Shape of the sampled test data:", test.shape)
-print("Shape of the sampled CV data:", cv.shape)
 
 # Sorting the Datasets w.r.t. to the simulation runs
 train.sort_values(by=['simulationRun', 'faultNumber'], inplace=True)
 test.sort_values(by=['simulationRun', 'faultNumber'], inplace=True)
-cv.sort_values(by=['simulationRun', 'faultNumber'], inplace=True)
 
 # Removing faults 3,9 and 15
 tr = train.drop(train[(train.faultNumber == 3) | (
     train.faultNumber == 9) | (train.faultNumber == 15)].index).reset_index()
 ts = test.drop(test[(test.faultNumber == 3) | (test.faultNumber == 9) | (
     test.faultNumber == 15)].index).reset_index()
-cv_ = cv.drop(cv[(cv.faultNumber == 3) | (cv.faultNumber == 9)
-                 | (cv.faultNumber == 15)].index).reset_index()
-print(tr)
 
 y_train = tr['faultNumber']
 y_test = ts['faultNumber']
-y_cv = cv_['faultNumber']
 
-# y_train = to_categorical(tr['faultNumber'], num_classes=21)
-# y_test = to_categorical(ts['faultNumber'], num_classes=21)
-# y_cv = to_categorical(cv_['faultNumber'], num_classes=21)
 
 # Removing unnecessary features from train, test and cv data.
 tr.drop(['faultNumber', 'Unnamed: 0', 'Unnamed: 0.1',
          'simulationRun', 'sample', 'index'], axis=1, inplace=True)
 ts.drop(['faultNumber', 'Unnamed: 0', 'Unnamed: 0.1',
          'simulationRun', 'sample', 'index'], axis=1, inplace=True)
-cv_.drop(['faultNumber', 'Unnamed: 0', 'Unnamed: 0.1',
-          'simulationRun', 'sample', 'index'], axis=1, inplace=True)
 print(tr)
 
 # Data normalization
 train_normalized = (tr - np.mean(tr)) / np.std(tr)
 test_normalized = (ts - np.mean(ts)) / np.std(ts)
-cv_normalized = (cv_ - np.mean(cv_)) / np.std(cv_)
-print(train_normalized)
 
-# print('Shape of the Train dataset:', train_normalized.shape)
-# print("Shape of the Test dataset:", test_normalized.shape)
-# print("Shape of the CV dataset:", cv_normalized.shape)
 
 # Resizing the train, test and cv data.
 x_train = np.resize(train_normalized, (230400, 1, 52))
 x_test = np.resize(test_normalized, (88832, 1, 52))
-x_cv = np.resize(cv_normalized, (93440, 1, 52))
 
 # data_loader
 train_loader = torch.utils.data.DataLoader(dataset=x_train,
@@ -81,9 +63,6 @@ test_loader = torch.utils.data.DataLoader(dataset=x_test,
                                           batch_size=batch_size,
                                           shuffle=False)
 
-cv_loader = torch.utils.data.DataLoader(dataset=x_cv,
-                                        batch_size=batch_size,
-                                        shuffle=True)
 print("DataLoader prepared!")
 
 # build the network
@@ -96,7 +75,7 @@ class LSTM(nn.Module):
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size,
                             num_layers=num_layers, batch_first=True)
-        self.dropout = nn.Dropout(0.4)
+    #    self.dropout = nn.Dropout(drop_prob)
         self.fc = nn.Linear(hidden_size, num_classes)
     #    self.softmax = nn.Softmax(dim=1)
 
@@ -135,8 +114,6 @@ for epoch in range(num_epochs):
         outputs = model(datas.float())
         loss = criterion(outputs, torch.Tensor(list(y_train.values))[
                          i * batch_size: (i + 1) * batch_size].long())
-        # loss = criterion(outputs,
-        #                  torch.Tensor(y_train[i * batch_size: (i + 1) * batch_size, :]))
 
         # Backward and optimize
         loss.backward()
