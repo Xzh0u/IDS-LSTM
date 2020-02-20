@@ -16,32 +16,19 @@ batch_size = 256
 num_epochs = 2
 learning_rate = 0.01
 
-# Reading the data in the form of csv
-train = pd.read_csv('data/sampled/train.csv')
+# preprocess test data (temproary)
 test = pd.read_csv("data/sampled/test.csv")
-cv = pd.read_csv("data/sampled/cv.csv")
-
-print("Shape of the sampled train data:", train.shape)
-print("Shape of the sampled test data:", test.shape)
-print("Shape of the sampled CV data:", cv.shape)
-
-# Sorting the Datasets w.r.t. to the simulation runs
-train.sort_values(by=['simulationRun', 'faultNumber'], inplace=True)
 test.sort_values(by=['simulationRun', 'faultNumber'], inplace=True)
-cv.sort_values(by=['simulationRun', 'faultNumber'], inplace=True)
 
-# Removing faults 3,9 and 15
 ts = test.drop(test[(test.faultNumber == 3) | (test.faultNumber == 9) | (
     test.faultNumber == 15)].index).reset_index()
 
-
 y_test = ts['faultNumber']
-
-# Removing unnecessary features from train, test and cv data.
 ts.drop(['faultNumber', 'Unnamed: 0', 'Unnamed: 0.1',
          'simulationRun', 'sample', 'index'], axis=1, inplace=True)
 
-x_test = np.resize(ts, (88832, 1, 52))
+test_normalized = (ts - np.mean(ts)) / np.std(ts)
+x_test = np.resize(test_normalized, (88832, 1, 52))
 
 test_loader = torch.utils.data.DataLoader(dataset=x_test,
                                           batch_size=batch_size,
@@ -49,6 +36,7 @@ test_loader = torch.utils.data.DataLoader(dataset=x_test,
 
 
 class LSTM(nn.Module):
+    # build the LSTM model
     def __init__(self, input_size, hidden_size, num_layers, num_classes):
         super(LSTM, self).__init__()
         self.hidden_size = hidden_size
