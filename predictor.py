@@ -64,13 +64,12 @@ class LSTM(nn.Module):
 
 model = LSTM(input_size, hidden_size, num_layers, num_classes).to(device)
 model.load_state_dict(torch.load('saved/model.pkl'))
-model.eval()  # change into test mode
+# model.eval()  # change into test mode
 
 # Test the model
 with torch.no_grad():
     correct = 0
     total = 0
-    model.float()
     for i, data in enumerate(test_loader):
         labels = torch.Tensor(list(y_test.values))[
             i * batch_size: (i + 1) * batch_size].long()
@@ -81,3 +80,13 @@ with torch.no_grad():
 
     print('Test Accuracy of the model on test examples: {} %'.format(
         100 * correct / total))
+
+
+def predict(data):
+    model = LSTM(input_size, hidden_size, num_layers, num_classes).to(device)
+    model.load_state_dict(torch.load('saved/model.pkl'))
+
+    outputs = model(data.float())
+    _, predicted = torch.max(outputs.data, 1)
+
+    return predicted

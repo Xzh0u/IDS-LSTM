@@ -85,4 +85,3 @@
 16:22:54,721 root INFO Epoch [10/100], Step [200/900], Loss: 0.5549
 16:22:58,510 root INFO Epoch [10/100], Step [300/900], Loss: 0.0000
 16:23:02,420 root INFO Epoch [10/100], Step [400/900], Loss: 0.1983
-16:29:31,712 root INFO Raw dataset:        index  Unnamed: 0  Unnamed: 0.1  faultNumber  simulationRun  sample  xmeas_1  xmeas_2  xmeas_3  ...   xmv_3   xmv_4   xmv_5   xmv_6   xmv_7   xmv_8   xmv_9  xmv_10  xmv_11
