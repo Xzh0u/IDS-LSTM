@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import logging
 
+
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -28,12 +29,6 @@ learning_rate = 0.01
 train = pd.read_csv("data/sampled/train.csv")
 test = pd.read_csv("data/sampled/test.csv")
 
-<<<<<<< HEAD
-print("Shape of the sampled train data:", train.shape)
-print("Shape of the sampled test data:", test.shape)
-
-=======
->>>>>>> f02b49f0946e581645d03891e899b2793bfe3b1e
 # Sorting the Datasets w.r.t. to the simulation runs
 train.sort_values(by=['simulationRun', 'faultNumber'], inplace=True)
 test.sort_values(by=['simulationRun', 'faultNumber'], inplace=True)
@@ -43,12 +38,7 @@ tr = train.drop(train[(train.faultNumber == 3) | (
     train.faultNumber == 9) | (train.faultNumber == 15)].index).reset_index()
 ts = test.drop(test[(test.faultNumber == 3) | (test.faultNumber == 9) | (
     test.faultNumber == 15)].index).reset_index()
-<<<<<<< HEAD
-=======
-cv_ = cv.drop(cv[(cv.faultNumber == 3) | (cv.faultNumber == 9)
-                 | (cv.faultNumber == 15)].index).reset_index()
-logging.debug("Raw dataset:{}".format(tr))
->>>>>>> f02b49f0946e581645d03891e899b2793bfe3b1e
+
 
 y_train = tr['faultNumber']
 y_test = ts['faultNumber']
@@ -58,27 +48,15 @@ y_test = ts['faultNumber']
 tr.drop(['faultNumber', 'Unnamed: 0', 'Unnamed: 0.1',
          'simulationRun', 'sample', 'index'], axis=1, inplace=True)
 ts.drop(['faultNumber', 'Unnamed: 0', 'Unnamed: 0.1',
-         'simulationRun', 'sample', 'index'], axis=1, inplace=True)
-<<<<<<< HEAD
-print(tr)
-=======
-cv_.drop(['faultNumber', 'Unnamed: 0', 'Unnamed: 0.1',
-          'simulationRun', 'sample', 'index'], axis=1, inplace=True)
+         'simulationRun', 'sample', 'index'], axis=1, inplace=True)s
 logging.debug("Dataset which will be used:{}".format(tr))
->>>>>>> f02b49f0946e581645d03891e899b2793bfe3b1e
 
 # Data normalization
 train_normalized = (tr - np.mean(tr)) / np.std(tr)
 test_normalized = (ts - np.mean(ts)) / np.std(ts)
-<<<<<<< HEAD
-
-=======
-cv_normalized = (cv_ - np.mean(cv_)) / np.std(cv_)
 
 logging.debug("Shape of the Train dataset: {}".format(train_normalized.shape))
 logging.debug("Shape of the Test dataset: {}".format(train_normalized.shape))
-logging.debug("Shape of the CV dataset: {}".format(train_normalized.shape))
->>>>>>> f02b49f0946e581645d03891e899b2793bfe3b1e
 
 # Resizing the train, test and cv data.
 x_train = np.resize(train_normalized, (230400, 1, 52))
@@ -93,14 +71,7 @@ test_loader = torch.utils.data.DataLoader(dataset=x_test,
                                           batch_size=batch_size,
                                           shuffle=False)
 
-<<<<<<< HEAD
-print("DataLoader prepared!")
-=======
-cv_loader = torch.utils.data.DataLoader(dataset=x_cv,
-                                        batch_size=batch_size,
-                                        shuffle=True)
 logging.debug("DataLoader prepared!")
->>>>>>> f02b49f0946e581645d03891e899b2793bfe3b1e
 
 # build the network
 
