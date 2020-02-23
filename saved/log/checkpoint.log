@@ -84,4 +84,13 @@
 16:22:50,639 root INFO Epoch [10/100], Step [100/900], Loss: 1.2401
 16:22:54,721 root INFO Epoch [10/100], Step [200/900], Loss: 0.5549
 16:22:58,510 root INFO Epoch [10/100], Step [300/900], Loss: 0.0000
-16:23:02,420 root INFO Epoch [10/100], Step [400/900], Loss: 0.1983
+16:23:02,420 root INFO Epoch [10/100], Step [400/900], Loss: 0.198310:21:18,31 numexpr.utils INFO NumExpr defaulting to 8 threads.
+11:06:35,386 numexpr.utils INFO NumExpr defaulting to 8 threads.
+11:07:39,593 numexpr.utils INFO NumExpr defaulting to 8 threads.
+11:07:57,850 numexpr.utils INFO NumExpr defaulting to 8 threads.
+11:15:44,819 numexpr.utils INFO NumExpr defaulting to 8 threads.
+11:17:41,608 numexpr.utils INFO NumExpr defaulting to 8 threads.
+11:17:58,50 numexpr.utils INFO NumExpr defaulting to 8 threads.
+11:23:57,538 numexpr.utils INFO NumExpr defaulting to 8 threads.
+11:26:52,325 numexpr.utils INFO NumExpr defaulting to 8 threads.
+11:28:10,53 numexpr.utils INFO NumExpr defaulting to 8 threads.

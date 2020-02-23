@@ -20,7 +20,7 @@ logging.basicConfig(filename='saved/log/checkpoint.log',
 input_size = 52
 hidden_size = 128
 num_layers = 2
-num_classes = 21
+output_size = 1
 batch_size = 256
 num_epochs = 100
 learning_rate = 0.01
@@ -40,10 +40,6 @@ ts = test.drop(test[(test.faultNumber == 3) | (test.faultNumber == 9) | (
     test.faultNumber == 15)].index).reset_index()
 
 
-y_train = tr['faultNumber']
-y_test = ts['faultNumber']
-
-
 # Removing unnecessary features from train, test and cv data.
 tr.drop(['faultNumber', 'Unnamed: 0', 'Unnamed: 0.1',
          'simulationRun', 'sample', 'index'], axis=1, inplace=True)
@@ -57,6 +53,10 @@ test_normalized = (ts - np.mean(ts)) / np.std(ts)
 
 logging.debug("Shape of the Train dataset: {}".format(train_normalized.shape))
 logging.debug("Shape of the Test dataset: {}".format(train_normalized.shape))
+
+
+y_train = train_normalized[1:, 1:]
+y_test = test_normalized[1:, 1:]
 
 # Resizing the train, test and cv data.
 x_train = np.resize(train_normalized, (230400, 1, 52))
@@ -77,14 +77,14 @@ logging.debug("DataLoader prepared!")
 
 
 class LSTM(nn.Module):
-    def __init__(self, input_size, hidden_size, num_layers, num_classes):
+    def __init__(self, input_size, hidden_size, num_layers, output_size):
         super(LSTM, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.lstm = nn.LSTM(input_size=input_size, hidden_size=hidden_size,
                             num_layers=num_layers, batch_first=True)
     #    self.dropout = nn.Dropout(drop_prob)
-        self.fc = nn.Linear(hidden_size, num_classes)
+        self.fc = nn.Linear(hidden_size, output_size)
     #    self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):  # input: tensor of shape (seq_len, batch, input_size)
@@ -105,7 +105,7 @@ class LSTM(nn.Module):
         return out
 
 
-model = LSTM(input_size, hidden_size, num_layers, num_classes).to(device)
+model = LSTM(input_size, hidden_size, num_layers, output_size).to(device)
 model.float()
 
 # Loss and optimizer
