@@ -1,5 +1,7 @@
 import glob
 import sys
+import os
+from datetime import datetime
 from py.predict import Predictor
 from thrift.transport import TSocket
 from thrift.transport import TTransport
@@ -60,9 +62,12 @@ class PredictionHandler:
 
     def predict(self, data):  # data is a list
         data = torch.from_numpy(np.array(data)).view(1, 1, 52)
+        print(datetime.now(), " Succeed in receive data.")
         model = LSTM(input_size, hidden_size, num_layers,
                      num_classes)  # .to(device)
-        model.load_state_dict(torch.load('saved/model.pkl'))
+        script_dir = os.path.dirname(__file__)
+        model.load_state_dict(torch.load(
+            os.path.join(script_dir, 'saved/model.pkl')))
 
         outputs = model(data.float())
         _, predicted = torch.max(outputs.data, 1)
@@ -75,17 +80,21 @@ class PredictionHandler:
         elif torch.max(outputs.data).item() > 50:
             loss = (torch.max(outputs.data).item() - 40) / 7
         else:
-            loss = random.uniform(0, 0.1)
+            # loss = random.uniform(0, 0.1)
+            loss = torch.max(outputs.data).item() / 100
             result = 0
 
         li = [result, loss]
+        print("(result, loss): ", li)
         return li
 
 
 if __name__ == '__main__':
     model = LSTM(input_size, hidden_size, num_layers,
                  num_classes)  # .to(device)
-    model.load_state_dict(torch.load('saved/model.pkl'))
+    script_dir = os.path.dirname(__file__)
+    model.load_state_dict(torch.load(
+        os.path.join(script_dir, 'saved/model.pkl')))
     handler = PredictionHandler()
     processor = Predictor.Processor(handler)
     transport = TSocket.TServerSocket(host='127.0.0.1', port=9090)
@@ -93,7 +102,6 @@ if __name__ == '__main__':
     pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
     # server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
-
     # You could do one of these for a multithreaded server
     server = TServer.TThreadedServer(
         processor, transport, tfactory, pfactory)
