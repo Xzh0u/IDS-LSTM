@@ -62,7 +62,7 @@ class PredictionHandler:
 
     def predict(self, data):  # data is a list
         data = torch.from_numpy(np.array(data)).view(1, 1, 52)
-        print(datetime.now(), " Succeed in receive data.")
+        print(datetime.now(), " Receive data successfully.")
         model = LSTM(input_size, hidden_size, num_layers,
                      num_classes)  # .to(device)
         script_dir = os.path.dirname(__file__)
