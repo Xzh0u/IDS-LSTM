@@ -3,6 +3,7 @@ import sys
 import os
 from datetime import datetime
 from py.predict import Predictor
+from py.predict import ttypes
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
@@ -60,7 +61,7 @@ class PredictionHandler:
         data.append(1.5)
         return data
 
-    def predict(self, data):  # data is a list
+    def predict(self, data, timestamp):  # data is a list
         data = torch.from_numpy(np.array(data)).view(1, 1, 52)
         print(datetime.now(), " Receive data successfully.")
         model = LSTM(input_size, hidden_size, num_layers,
@@ -84,9 +85,12 @@ class PredictionHandler:
             loss = torch.max(outputs.data).item() / 100
             result = 0
 
-        li = [result, loss]
-        print("(result, loss): ", li)
-        return li
+        pred = ttypes.pred()
+        pred.type = result
+        pred.loss = loss
+        pred.timestamp = timestamp
+        print(pred)
+        return pred
 
 
 if __name__ == '__main__':

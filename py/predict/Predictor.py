@@ -30,10 +30,11 @@ class Iface(object):
         """
         pass
 
-    def predict(self, data):
+    def predict(self, data, timestamp):
         """
         Parameters:
          - data
+         - timestamp
 
         """
         pass
@@ -102,19 +103,21 @@ class Client(Iface):
             return result.success
         raise TApplicationException(TApplicationException.MISSING_RESULT, "pong failed: unknown result")
 
-    def predict(self, data):
+    def predict(self, data, timestamp):
         """
         Parameters:
          - data
+         - timestamp
 
         """
-        self.send_predict(data)
+        self.send_predict(data, timestamp)
         return self.recv_predict()
 
-    def send_predict(self, data):
+    def send_predict(self, data, timestamp):
         self._oprot.writeMessageBegin('predict', TMessageType.CALL, self._seqid)
         args = predict_args()
         args.data = data
+        args.timestamp = timestamp
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -216,7 +219,7 @@ class Processor(Iface, TProcessor):
         iprot.readMessageEnd()
         result = predict_result()
         try:
-            result.success = self._handler.predict(args.data)
+            result.success = self._handler.predict(args.data, args.timestamp)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -465,12 +468,14 @@ class predict_args(object):
     """
     Attributes:
      - data
+     - timestamp
 
     """
 
 
-    def __init__(self, data=None,):
+    def __init__(self, data=None, timestamp=None,):
         self.data = data
+        self.timestamp = timestamp
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -491,6 +496,11 @@ class predict_args(object):
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.I32:
+                    self.timestamp = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -507,6 +517,10 @@ class predict_args(object):
             for iter20 in self.data:
                 oprot.writeDouble(iter20)
             oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.timestamp is not None:
+            oprot.writeFieldBegin('timestamp', TType.I32, 2)
+            oprot.writeI32(self.timestamp)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -528,6 +542,7 @@ all_structs.append(predict_args)
 predict_args.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'data', (TType.DOUBLE, None, False), None, ),  # 1
+    (2, TType.I32, 'timestamp', None, None, ),  # 2
 )
 
 
@@ -552,13 +567,9 @@ class predict_result(object):
             if ftype == TType.STOP:
                 break
             if fid == 0:
-                if ftype == TType.LIST:
-                    self.success = []
-                    (_etype24, _size21) = iprot.readListBegin()
-                    for _i25 in range(_size21):
-                        _elem26 = iprot.readDouble()
-                        self.success.append(_elem26)
-                    iprot.readListEnd()
+                if ftype == TType.STRUCT:
+                    self.success = pred()
+                    self.success.read(iprot)
                 else:
                     iprot.skip(ftype)
             else:
@@ -572,11 +583,8 @@ class predict_result(object):
             return
         oprot.writeStructBegin('predict_result')
         if self.success is not None:
-            oprot.writeFieldBegin('success', TType.LIST, 0)
-            oprot.writeListBegin(TType.DOUBLE, len(self.success))
-            for iter27 in self.success:
-                oprot.writeDouble(iter27)
-            oprot.writeListEnd()
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -596,7 +604,7 @@ class predict_result(object):
         return not (self == other)
 all_structs.append(predict_result)
 predict_result.thrift_spec = (
-    (0, TType.LIST, 'success', (TType.DOUBLE, None, False), None, ),  # 0
+    (0, TType.STRUCT, 'success', [pred, None], None, ),  # 0
 )
 fix_spec(all_structs)
 del all_structs
