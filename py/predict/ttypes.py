@@ -51,8 +51,8 @@ class pred(object):
                 else:
                     iprot.skip(ftype)
             elif fid == 3:
-                if ftype == TType.I32:
-                    self.timestamp = iprot.readI32()
+                if ftype == TType.STRING:
+                    self.timestamp = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             else:
@@ -74,8 +74,8 @@ class pred(object):
             oprot.writeDouble(self.loss)
             oprot.writeFieldEnd()
         if self.timestamp is not None:
-            oprot.writeFieldBegin('timestamp', TType.I32, 3)
-            oprot.writeI32(self.timestamp)
+            oprot.writeFieldBegin('timestamp', TType.STRING, 3)
+            oprot.writeString(self.timestamp.encode('utf-8') if sys.version_info[0] == 2 else self.timestamp)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -98,7 +98,7 @@ pred.thrift_spec = (
     None,  # 0
     (1, TType.I32, 'type', None, None, ),  # 1
     (2, TType.DOUBLE, 'loss', None, None, ),  # 2
-    (3, TType.I32, 'timestamp', None, None, ),  # 3
+    (3, TType.STRING, 'timestamp', 'UTF8', None, ),  # 3
 )
 fix_spec(all_structs)
 del all_structs
