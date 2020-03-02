@@ -497,8 +497,8 @@ class predict_args(object):
                 else:
                     iprot.skip(ftype)
             elif fid == 2:
-                if ftype == TType.I32:
-                    self.timestamp = iprot.readI32()
+                if ftype == TType.STRING:
+                    self.timestamp = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             else:
@@ -519,8 +519,8 @@ class predict_args(object):
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.timestamp is not None:
-            oprot.writeFieldBegin('timestamp', TType.I32, 2)
-            oprot.writeI32(self.timestamp)
+            oprot.writeFieldBegin('timestamp', TType.STRING, 2)
+            oprot.writeString(self.timestamp.encode('utf-8') if sys.version_info[0] == 2 else self.timestamp)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -542,7 +542,7 @@ all_structs.append(predict_args)
 predict_args.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'data', (TType.DOUBLE, None, False), None, ),  # 1
-    (2, TType.I32, 'timestamp', None, None, ),  # 2
+    (2, TType.STRING, 'timestamp', 'UTF8', None, ),  # 2
 )
 
 
